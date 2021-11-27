@@ -18,7 +18,7 @@ class MusicDataset(Dataset):
 
   def __getitem__(self, index):
     # note that this isn't randomly selecting. It's a simple get a single item that represents an x and y
-    _x = self.X[index]
-    _y = self.Y[index]
+    _x = self.X[index, :, :]
+    _y = self.Y[index, :]
 
     return _x, _y

@@ -18,6 +18,7 @@ class LinearModel(nn.Module):
         self.flatten = nn.Flatten()
         self.stack = nn.Sequential(
             nn.Linear(input_dim, hidden_size),
+            nn.ReLU(),
             nn.Linear(hidden_size, num_classes)
         )
 

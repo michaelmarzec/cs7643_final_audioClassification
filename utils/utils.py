@@ -61,6 +61,8 @@ def load_pytorch_tensor(filename: str):
     tensor = torch.load(filename)
     return tensor
 
+def convert_multiclass_to_binary(wanted_class):
+    return 0
 
 def train(model, dataloader, optimizer, criterion):
     """
@@ -81,17 +83,14 @@ def train(model, dataloader, optimizer, criterion):
 
     # Mini-batch training
     for batch_idx, data in enumerate(progress_bar):
-        source = data.src.transpose(1, 0)
-        target = data.trg.transpose(1, 0)
+        input_data = data[0]
+        correct_labels = data[1]
 
-        translation = model(source)
-        translation = translation.reshape(-1, translation.shape[-1])
-        target = target.reshape(-1)
+        prediction = model(input_data)
 
         optimizer.zero_grad()
-        loss = criterion(translation, target)
+        loss = criterion(prediction, correct_labels)
         loss.backward()
-        torch.nn.utils.clip_grad_norm_(model.parameters(), 0.5)
         optimizer.step()
 
         total_loss += loss.data
@@ -116,14 +115,12 @@ def evaluate(model, dataloader, criterion):
         # Get the progress bar
         progress_bar = tqdm_notebook(dataloader, ascii=True)
         for batch_idx, data in enumerate(progress_bar):
-            source = data.src.transpose(1, 0)
-            target = data.trg.transpose(1, 0)
+            input_data = data[0]
+            correct_labels = data[1]
 
-            translation = model(source)
-            translation = translation.reshape(-1, translation.shape[-1])
-            target = target.reshape(-1)
+            prediction = model(input_data)
 
-            loss = criterion(translation, target)
+            loss = criterion(prediction, correct_labels)
             total_loss += loss
             progress_bar.set_description_str(
                 "Batch: %d, Loss: %.4f" % ((batch_idx + 1), loss.item()))
