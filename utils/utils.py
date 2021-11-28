@@ -62,6 +62,25 @@ def load_pytorch_tensor(filename: str):
     return tensor
 
 
+def split_data_train_val(dataset, labels, percent_val=0.2):
+    """
+    Take a dataset (data + labels) and return two sets, one for t
+    training and one for validation
+    :param dataset: Data portion only
+    :param labels: Label portio only
+    :param percent_val: Split, this much data becomes validation
+    :return: 4 tensors, data_train, label_train, data_val, label_val
+    """
+    total_length = dataset.shape[0]
+    train_len = int(total_length * (1.0 - percent_val))
+    data_train = dataset[:train_len]
+    label_train = labels[:train_len]
+    data_val = dataset[train_len:]
+    label_val = labels[train_len:]
+
+    return data_train, label_train, data_val, label_val
+
+
 def convert_multiclass_to_binary(wanted_class: int, array: np.ndarray):
     return_array = np.zeros(array.shape[0], dtype=int)
     count = 0
@@ -119,6 +138,7 @@ def evaluate(model, dataloader, criterion):
     :return: Loss
     """
     # Set the model to eval mode to avoid weights update
+    dataloader = iter(dataloader)
     model.eval()
     total_loss = 0.
     with torch.no_grad():
