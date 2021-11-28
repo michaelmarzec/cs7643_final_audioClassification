@@ -28,4 +28,5 @@ class LinearModel(nn.Module):
 
         x = self.flatten(x)
         out = self.stack(x)
+        out = nn.functional.softmax(out)
         return out

@@ -61,8 +61,17 @@ def load_pytorch_tensor(filename: str):
     tensor = torch.load(filename)
     return tensor
 
-def convert_multiclass_to_binary(wanted_class):
-    return 0
+
+def convert_multiclass_to_binary(wanted_class: int, array: np.ndarray):
+    return_array = np.zeros(array.shape[0], dtype=int)
+    count = 0
+    for index in range(0, array.shape[0]):
+        if wanted_class in array[index, :]:
+            return_array[index] = 1
+            count += 1
+
+    return return_array, count
+
 
 def train(model, dataloader, optimizer, criterion):
     """
@@ -73,6 +82,7 @@ def train(model, dataloader, optimizer, criterion):
     :param criterion: Loss calculation (should be cross entropy loss)
     :return: loss
     """
+    dataloader = iter(dataloader)
     model.train()
 
     # Record total loss
