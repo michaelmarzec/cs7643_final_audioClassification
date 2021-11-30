@@ -5,6 +5,8 @@ import tfrecord
 import numpy as np
 from os import walk
 
+import torchmetrics
+
 # Tqdm progress bar
 from tqdm import tqdm_notebook
 
@@ -159,7 +161,38 @@ def evaluate(model, dataloader, criterion):
     return total_loss, avg_loss
 
 
-if __name__ == '__main__':
+def evaluate_with_metrics(model, dataloader):
+    """
+    Adapted from CS7643 to evaluate and return some metrics on test data
+    :param model: Model to be evaluated
+    :param dataloader: Data to be loaded
+    :return: Bunch of metrics
+    """
+    # Set the model to eval mode to avoid weights update
+    dataloader = iter(dataloader)
+    model.eval()
+
+    total_accuracy = 0.0
+
+    with torch.no_grad():
+        # Get the progress bar
+        progress_bar = tqdm_notebook(dataloader, ascii=True)
+        for batch_idx, data in enumerate(progress_bar):
+            input_data = data[0]
+            correct_labels = data[1]
+
+            prediction = model(input_data)
+
+            accuracy = torchmetrics.functional.accuracy(prediction, correct_labels)
+            total_accuracy += accuracy
+            progress_bar.set_description_str(
+                "Batch: %d" % (batch_idx + 1))
+
+    avg_accuracy = total_accuracy / len(dataloader)
+    return avg_accuracy
+
+
+def create_training_tensors():
     balanced_train_set = []
     for (dirpath, dirnames, filenames) in walk('./../features/audioset_v1_embeddings/bal_train'):
         for files in filenames:
@@ -182,3 +215,30 @@ if __name__ == '__main__':
 
     torch.save(x_data, 'balanced_train_data.pt')
     torch.save(y_data, 'balanced_train_label.pt')
+
+def create_eval_tensors():
+    eval_set = []
+    for (dirpath, dirnames, filenames) in walk('./../features/audioset_v1_embeddings/eval'):
+        for files in filenames:
+            realpath = os.path.join(dirpath, files)
+            eval_set.append(realpath)
+        break
+
+    x_data = None
+    y_data = None
+    for record in eval_set:
+        x_data_in, y_data_in = read_tf_records(record)
+
+        if x_data is not None:
+            if x_data_in is not None:
+                x_data = np.vstack((x_data, x_data_in))
+                y_data = np.vstack((y_data, y_data_in))
+        else:
+            x_data = x_data_in
+            y_data = y_data_in
+
+    torch.save(x_data, 'eval_data.pt')
+    torch.save(y_data, 'eval_label.pt')
+
+if __name__ == '__main__':
+    create_eval_tensors()

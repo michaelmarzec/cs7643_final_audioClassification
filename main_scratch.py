@@ -3,12 +3,14 @@ import numpy as np
 from torch.utils.data import DataLoader
 
 from models import LinearModel
+from models import SimpleConvolutionModel
 from utils import utils
 from utils import dataloader
 import torch
 from torch import nn
 from torch import optim
 
+import torchmetrics
 
 def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -37,20 +39,20 @@ def main():
     # for the linear model, the input will be all 10seconds of audio
     # stacked into one layer - therefore input dimension
     # is 10 * 128
-    linear_model = LinearModel.LinearModel(10*128, 64, 2)
-    optimizer = optim.Adam(linear_model.parameters(), lr=1e-3)
+    conv_model = SimpleConvolutionModel.SimpleConvolutionModel()
+    optimizer = optim.Adam(conv_model.parameters(), lr=1e-3)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer)
     criterion = nn.CrossEntropyLoss()
 
-    for epoch_idx in range(10):
+    for epoch_idx in range(1):
         print("-----------------------------------")
         print("Epoch %d" % (epoch_idx + 1))
         print("-----------------------------------")
 
-        train_loss, avg_train_loss = utils.train(linear_model, train_loader, optimizer, criterion)
+        train_loss, avg_train_loss = utils.train(conv_model, train_loader, optimizer, criterion)
         scheduler.step(train_loss)
 
-        val_loss, avg_val_loss = utils.evaluate(linear_model, val_loader, criterion)
+        val_loss, avg_val_loss = utils.evaluate(conv_model, val_loader, criterion)
 
         avg_train_loss = avg_train_loss.item()
         avg_val_loss = avg_val_loss.item()
@@ -59,7 +61,28 @@ def main():
     print("done")
 
 
-    print("done")
+    # evaluate the model
+    model = conv_model
+
+    eval_batch_size = 512
+
+    eval_data = utils.load_pytorch_tensor('./utils/eval_data.pt')
+    eval_label = utils.load_pytorch_tensor('./utils/eval_label.pt')
+
+    # make this multi-classification problem a binary classification problem
+    eval_label, count = utils.convert_multiclass_to_binary(0, eval_label)
+    print("Total of " + str(count) + " positive examples out of " + str(eval_label.shape[0]) + " samples")
+
+    eval_data = np.float32(eval_data)
+
+    eval_loader = DataLoader(eval_data, batch_size=eval_batch_size, shuffle=True)
+
+    # push the eval data through the model
+    predictions = model(eval_data)
+    acc = torchmetrics.functional.accuracy(predictions, eval_label)
+
+    print("Model achieved an accuracy of %d on evaluation data", str(acc))
+
 
 
 if __name__ == '__main__':
