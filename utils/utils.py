@@ -6,6 +6,8 @@ import numpy as np
 from os import walk
 
 import torchmetrics
+from torchmetrics import ConfusionMatrix
+from torchmetrics import F1
 
 # Tqdm progress bar
 from tqdm import tqdm_notebook
@@ -172,6 +174,9 @@ def evaluate_with_metrics(model, dataloader):
     dataloader = iter(dataloader)
     model.eval()
 
+    # declare the metric keepers
+    conf_mat = ConfusionMatrix(num_classes=2)
+    f1_score = F1(num_classes=2)
     total_accuracy = 0.0
 
     with torch.no_grad():
@@ -183,13 +188,17 @@ def evaluate_with_metrics(model, dataloader):
 
             prediction = model(input_data)
 
+            conf_mat.update(prediction, correct_labels)
+            f1_score.update(prediction, correct_labels)
             accuracy = torchmetrics.functional.accuracy(prediction, correct_labels)
             total_accuracy += accuracy
             progress_bar.set_description_str(
                 "Batch: %d" % (batch_idx + 1))
 
     avg_accuracy = total_accuracy / len(dataloader)
-    return avg_accuracy
+    final_conf_mat = conf_mat.compute()
+    final_f1_score = f1_score.compute()
+    return avg_accuracy, final_conf_mat, final_f1_score
 
 
 def create_training_tensors():
