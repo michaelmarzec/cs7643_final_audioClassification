@@ -187,8 +187,8 @@ def evaluate_with_metrics(model, dataloader):
         # Get the progress bar
         progress_bar = tqdm_notebook(dataloader, ascii=True)
         for batch_idx, data in enumerate(progress_bar):
-            input_data = data[0].to(device)
-            correct_labels = data[1].to(device)
+            input_data = data[0].to('cpu')
+            correct_labels = data[1].to('cpu')
 
             prediction = model(input_data)
 
