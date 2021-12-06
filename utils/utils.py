@@ -12,6 +12,10 @@ from torchmetrics import F1
 # Tqdm progress bar
 from tqdm import tqdm_notebook
 
+# CUDA for PyTorch
+use_cuda = torch.cuda.is_available()
+device = torch.device("cuda:0" if use_cuda else "cpu")
+
 def read_tf_records(filename : str) -> torch.Tensor:
     '''
     The output of this function should be x_data, y_data
@@ -116,8 +120,8 @@ def train(model, dataloader, optimizer, criterion):
 
     # Mini-batch training
     for batch_idx, data in enumerate(progress_bar):
-        input_data = data[0]
-        correct_labels = data[1]
+        input_data = data[0].to(device)
+        correct_labels = data[1].to(device)
 
         prediction = model(input_data)
 
@@ -149,8 +153,8 @@ def evaluate(model, dataloader, criterion):
         # Get the progress bar
         progress_bar = tqdm_notebook(dataloader, ascii=True)
         for batch_idx, data in enumerate(progress_bar):
-            input_data = data[0]
-            correct_labels = data[1]
+            input_data = data[0].to(device)
+            correct_labels = data[1].to(device)
 
             prediction = model(input_data)
 
@@ -183,8 +187,8 @@ def evaluate_with_metrics(model, dataloader):
         # Get the progress bar
         progress_bar = tqdm_notebook(dataloader, ascii=True)
         for batch_idx, data in enumerate(progress_bar):
-            input_data = data[0]
-            correct_labels = data[1]
+            input_data = data[0].to('cpu')
+            correct_labels = data[1].to('cpu')
 
             prediction = model(input_data)
 
