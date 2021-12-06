@@ -119,6 +119,16 @@ def train(model, dataloader, optimizer, criterion):
         input_data = data[0]
         correct_labels = data[1]
 
+        try:
+            print("Training Data on Device: " + input_data.get_device())
+        except:
+            print("Training Data on Device: CPU")
+
+        try:
+            print("Y Data on Device: " + correct_labels.get_device())
+        except:
+            print("Y Data on Device: CPU")
+
         prediction = model(input_data)
 
         optimizer.zero_grad()
@@ -151,6 +161,16 @@ def evaluate(model, dataloader, criterion):
         for batch_idx, data in enumerate(progress_bar):
             input_data = data[0]
             correct_labels = data[1]
+
+            try:
+                print("Training Data on Device: " + input_data.get_device())
+            except:
+                print("Training Data on Device: CPU")
+
+            try:
+                print("Y Data on Device: " + correct_labels.get_device())
+            except:
+                print("Y Data on Device: CPU")
 
             prediction = model(input_data)
 
@@ -185,6 +205,16 @@ def evaluate_with_metrics(model, dataloader):
         for batch_idx, data in enumerate(progress_bar):
             input_data = data[0]
             correct_labels = data[1]
+
+            try:
+                print("Training Data on Device: " + input_data.get_device())
+            except:
+                print("Training Data on Device: CPU")
+
+            try:
+                print("Y Data on Device: " + correct_labels.get_device())
+            except:
+                print("Y Data on Device: CPU")
 
             prediction = model(input_data)
 
