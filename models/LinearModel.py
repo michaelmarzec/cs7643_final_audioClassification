@@ -26,8 +26,6 @@ class LinearModel(nn.Module):
         # code inspired by
         # https://pytorch.org/tutorials/beginner/basics/buildmodel_tutorial.html
 
-        print(x.get_device())
-
         x = self.flatten(x)
         out = self.stack(x)
         return out

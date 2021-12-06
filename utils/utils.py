@@ -118,8 +118,6 @@ def train(model, dataloader, optimizer, criterion):
     # Get the progress bar for later modification
     progress_bar = tqdm_notebook(dataloader, ascii=True)
 
-    print("Going to use training device: " + device)
-
     # Mini-batch training
     for batch_idx, data in enumerate(progress_bar):
         input_data = data[0].to(device)
