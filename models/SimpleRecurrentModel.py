@@ -2,8 +2,8 @@ import torch
 import torch.nn as nn
 
 
-class SimpleConvolutionModel(nn.Module):
-    def __init__(self, starting_kernel_size=3, dropout_rate=0.2):
+class SimpleRecurentModel(nn.Module):
+    def __init__(self, input_size, output_size, hidden_dimensions, n_layers):
         """
         This model is just used as a baseline for setting up the training
         and evaluation infrastructure
@@ -11,34 +11,24 @@ class SimpleConvolutionModel(nn.Module):
         :param hidden_size: The size of the hidden layer
         :param num_classes: The size of the output
         """
-        super(SimpleConvolutionModel, self).__init__()
+        super(SimpleRecurentModel, self).__init__()
 
-        # code inspired by
-        # https://pytorch.org/tutorials/beginner/basics/buildmodel_tutorial.html
-        self.flatten = nn.Flatten()
-        self.layer1 = nn.Conv1d(1, 32, starting_kernel_size)
-        self.layer2 = nn.ReLU()
-        self.layer3 = nn.Conv1d(32, 64, starting_kernel_size + 2)
-        self.layer4 = nn.Dropout(dropout_rate)
-        self.layer5 = nn.MaxPool1d(starting_kernel_size + 2)
-        self.layer6 = nn.Conv1d(64, 128, starting_kernel_size + 4)
-        self.layer7 = nn.Dropout(dropout_rate)
-        self.layer8 = nn.Linear(40896, 2)
-        # self.layer8 = nn.Linear(31744, 2)
+        # params
+        self.hidden_dimensions = hidden_dimensions
+        self.n_layers = n_layers
+        self.rnn = nn.RNN(input_size, hidden_dimensions, n_layers, batch_first=True)
+        self.fc = nn.Linear(hidden_dimensions, output_size)
 
     def forward(self, x):
-        # code inspired by
-        # https://pytorch.org/tutorials/beginner/basics/buildmodel_tutorial.html
 
-        x = self.flatten(x)
-        x = torch.reshape(x, (x.shape[0], 1, x.shape[1]))
-        out = self.layer1(x)
-        # out = self.layer2(out)
-        # out = self.layer3(out)
-        # out = self.layer4(out)
-        # out = self.layer5(out)
-        # out = self.layer6(out)
-        # out = self.layer7(out)
-        out = torch.flatten(out, 1)
-        out = self.layer8(out)
-        return out
+        batch_size = x.size(0)
+
+        hidden = self.init_hidden(batch_size)
+        out, hidden = self.rnn(x, hidden)
+
+        #reshape for fully connected (#####UPDATE)
+        out = out.contiguous().view(-1, self.hidden_dimensions)
+        out = self.fc(out)
+
+        return out, hidden
+
