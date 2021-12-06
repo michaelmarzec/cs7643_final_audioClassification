@@ -7,10 +7,10 @@ class MusicDataset(Dataset):
   Because all of our data is globbed together into one massive batch, we use this
   class extension for torch's Dataset to create batches, training, and validation data
   """
-  def __init__(self, X, Y):
-    self.X = X
-    self.Y = Y
-    if len(self.X) != len(self.Y):
+  def __init__(self, X, Y, device='cpu'):
+    self.X = torch.from_numpy(X).to(device)
+    self.Y = torch.from_numpy(Y).to(device)
+    if len(X) != len(Y):
       raise Exception("The length of X does not match the length of Y")
 
   def __len__(self):
