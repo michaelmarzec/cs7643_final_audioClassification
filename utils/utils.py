@@ -124,9 +124,6 @@ def train(model, dataloader, optimizer, criterion):
         correct_labels = data[1].to(device)
 
         prediction = model(input_data)
-        # print("PRED: {}".format(prediction.shape))
-        # print("labels: {}".format(correct_labels.shape))
-        # print(correct_labels)
 
         optimizer.zero_grad()
         loss = criterion(prediction, correct_labels)

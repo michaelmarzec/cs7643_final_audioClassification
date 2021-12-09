@@ -52,13 +52,10 @@ class GtTransformer(nn.Module):
     def forward(self, inputs):
 #         embeds = self.embed(inputs)
 
-#         print("INPUTS: {}".format(inputs.shape))
         hidden_states = self.multi_head_attention(inputs)
         x = self.flatten(hidden_states)
         outputs = self.feedforward_layer(x)
         scores = self.final_layer(outputs)
-#         print("SCORES: {}".format(scores.shape))
-#         print(torch.argmax(scores, dim=1))
         return scores
 
 
