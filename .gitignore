@@ -1,0 +1,5 @@
+.idea/
+models/__pycache__/
+utils/__pycache__/
+.DS_Store
+.tmp.driveupload/

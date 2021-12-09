@@ -23,8 +23,10 @@ class SimpleConvolutionModel(nn.Module):
         self.layer5 = nn.MaxPool1d(starting_kernel_size + 2)
         self.layer6 = nn.Conv1d(64, 128, starting_kernel_size + 4)
         self.layer7 = nn.Dropout(dropout_rate)
-        self.layer8 = nn.Linear(40896, 2)
-        # self.layer8 = nn.Linear(31744, 2)
+        # self.layer8 = nn.Linear(40896, 2)
+        self.layer8 = nn.Linear(31744, 2)
+        # self.layer8 = nn.Linear(11776, 2)
+        # print("with dropout")
 
     def forward(self, x):
         # code inspired by
@@ -33,12 +35,12 @@ class SimpleConvolutionModel(nn.Module):
         x = self.flatten(x)
         x = torch.reshape(x, (x.shape[0], 1, x.shape[1]))
         out = self.layer1(x)
-        # out = self.layer2(out)
-        # out = self.layer3(out)
-        # out = self.layer4(out)
-        # out = self.layer5(out)
-        # out = self.layer6(out)
-        # out = self.layer7(out)
+        out = self.layer2(out)
+        out = self.layer3(out)
+        out = self.layer4(out)
+        out = self.layer5(out)
+        out = self.layer6(out)
+        out = self.layer7(out)
         out = torch.flatten(out, 1)
         out = self.layer8(out)
         return out
