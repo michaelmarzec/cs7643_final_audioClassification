@@ -4,6 +4,7 @@ from torch.utils.data import DataLoader
 
 from models import LinearModel
 from models import SimpleConvolutionModel
+from models import SimpleRecurrentModel
 from utils import utils
 from utils import dataloader
 import torch
@@ -24,6 +25,7 @@ def main():
     print("Total of " + str(count) + " positive examples out of " + str(training_label.shape[0]) + " samples")
     # training_label = np.reshape(training_label, (training_label.shape[0], 1))
 
+    training_data = utils.add_sos_eos_tokens_data(training_data)
     training_data = np.float32(training_data)
     # training_label = np.float32(training_label)
 
@@ -39,8 +41,8 @@ def main():
     # for the linear model, the input will be all 10seconds of audio
     # stacked into one layer - therefore input dimension
     # is 10 * 128
-    conv_model = SimpleConvolutionModel.SimpleConvolutionModel()
-    optimizer = optim.Adam(conv_model.parameters(), lr=1e-3)
+    recurrent_model = SimpleRecurrentModel.SimpleRecurrentModel()
+    optimizer = optim.Adam(recurrent_model.parameters(), lr=1e-3)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer)
     criterion = nn.CrossEntropyLoss()
 
@@ -49,10 +51,10 @@ def main():
         print("Epoch %d" % (epoch_idx + 1))
         print("-----------------------------------")
 
-        train_loss, avg_train_loss = utils.train(conv_model, train_loader, optimizer, criterion)
+        train_loss, avg_train_loss = utils.train(recurrent_model, train_loader, optimizer, criterion)
         scheduler.step(train_loss)
 
-        val_loss, avg_val_loss = utils.evaluate(conv_model, val_loader, criterion)
+        val_loss, avg_val_loss = utils.evaluate(recurrent_model, val_loader, criterion)
 
         avg_train_loss = avg_train_loss.item()
         avg_val_loss = avg_val_loss.item()
@@ -62,7 +64,7 @@ def main():
 
 
     # evaluate the model
-    model = conv_model
+    model = recurrent_model
 
     eval_batch_size = 512
 

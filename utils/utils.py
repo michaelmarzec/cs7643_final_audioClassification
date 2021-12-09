@@ -1,5 +1,6 @@
 import os.path
 
+import numpy
 import torch
 import tfrecord
 import numpy as np
@@ -98,6 +99,25 @@ def convert_multiclass_to_binary(wanted_class: int, array: np.ndarray):
             count += 1
 
     return return_array, count
+
+
+def add_sos_eos_tokens_data(data: numpy.ndarray) -> numpy.ndarray:
+    """
+    Takes the data in the form of examples * time_slice * data
+    and adds tokens to become examples examples * time_slice + 2 * data
+    :param data:
+    :return:
+    """
+    # so https://asmp-eurasipjournals.springeropen.com/articles/10.1186/s13636-020-00172-6
+    # and many other papers don't mention using <sos> and <eos> tokens for audio tasks.
+    # Instead they throw away predictions that come from the network in overlapping
+    # instances of audio (i.e. the boundary between separate clips). I guess let's
+    # try it both ways?
+    column = np.ones([data.shape[0], 1, data.shape[2]])
+    return_array = np.concatenate((column * -1, data), axis=1)
+    return_array = np.concatenate((return_array, column * -2), axis=1)
+
+    return return_array
 
 
 def train(model, dataloader, optimizer, criterion):
