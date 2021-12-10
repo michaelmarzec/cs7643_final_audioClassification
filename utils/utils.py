@@ -101,6 +101,46 @@ def convert_multiclass_to_binary(wanted_class: int, array: np.ndarray):
     return return_array, count
 
 
+def augment_training_data(dataset: numpy.ndarray, labels: numpy.ndarray) -> [numpy.ndarray, numpy.ndarray]:
+    """
+    The idea here is to up the number of data samples that are positively labelled by performing
+    the following transformations:
+    1. adding a constant to positively labelled data
+    2. subtracting a constant from positively labelled data
+    3. averaging different combinations of positively labelled data
+    :param dataset: The original dataset
+    :param labels: The original labels
+    :return: new dataset, new labels
+    """
+    positive_samples = np.sum(labels)
+    addition_data_augments = np.ndarray([positive_samples, 10, 128], dtype=np.intc)
+    subtraction_data_augments = np.ndarray([positive_samples, 10, 128], dtype=np.intc)
+    label_augments = np.ones(positive_samples, dtype=labels.dtype)
+
+    sum_array = 10 * np.ones([1, 10, 128])
+    # first lets do the additions
+    sum_index = 0
+    for index in range(labels.shape[0]):
+        if labels[index]:
+            # positively labelled sample
+            addition_data_augments[sum_index, :, :] = dataset[index, :, :] + sum_array
+            addition_data_augments[sum_index, :, :] = np.minimum(255, addition_data_augments[sum_index, :, :])
+            subtraction_data_augments[sum_index, :, :] = dataset[index, :, :] - sum_array
+            subtraction_data_augments[sum_index, :, :] = np.maximum(0, subtraction_data_augments[sum_index, :, :])
+            sum_index += 1
+
+    # convert back to uint8
+    addition_data_augments = addition_data_augments.astype(np.uint8)
+    subtraction_data_augments = subtraction_data_augments.astype(np.uint8)
+
+    dataset = np.vstack((dataset, addition_data_augments))
+    dataset = np.vstack((dataset, subtraction_data_augments))
+    labels = np.hstack((labels, label_augments))
+    labels = np.hstack((labels, label_augments))
+
+    return dataset, labels
+
+
 def add_sos_eos_tokens_data(data: numpy.ndarray) -> numpy.ndarray:
     """
     Takes the data in the form of examples * time_slice * data
