@@ -42,8 +42,9 @@ def main():
     # for the linear model, the input will be all 10seconds of audio
     # stacked into one layer - therefore input dimension
     # is 10 * 128
-    linear_model = LinearModel.LinearModel()
-    optimizer = optim.Adam(linear_model.parameters(), lr=1e-3)
+    # model = LinearModel.LinearModel()
+    model = SimpleConvolutionModel.SimpleConvolutionModel()
+    optimizer = optim.Adam(model.parameters(), lr=1e-3)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer)
     criterion = nn.CrossEntropyLoss()
 
@@ -52,10 +53,10 @@ def main():
         print("Epoch %d" % (epoch_idx + 1))
         print("-----------------------------------")
 
-        train_loss, avg_train_loss = utils.train(linear_model, train_loader, optimizer, criterion)
+        train_loss, avg_train_loss = utils.train(model, train_loader, optimizer, criterion)
         scheduler.step(train_loss)
 
-        val_loss, avg_val_loss = utils.evaluate(linear_model, val_loader, criterion)
+        val_loss, avg_val_loss = utils.evaluate(model, val_loader, criterion)
 
         avg_train_loss = avg_train_loss.item()
         avg_val_loss = avg_val_loss.item()
@@ -65,7 +66,7 @@ def main():
 
 
     # evaluate the model
-    model = recurrent_model
+    model = model
 
     eval_batch_size = 512
 
