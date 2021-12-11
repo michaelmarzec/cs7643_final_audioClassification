@@ -138,6 +138,13 @@ def augment_training_data(dataset: numpy.ndarray, labels: numpy.ndarray) -> [num
     labels = np.hstack((labels, label_augments))
     labels = np.hstack((labels, label_augments))
 
+    # now shuffle the data so that the augmented data is sparsed in between
+    # code inspired from https://www.kite.com/python/answers/how-to-shuffle-two-numpy-arrays-in-unision-in-python
+    shuffler = np.random.permutation(len(dataset))
+    dataset = dataset[shuffler]
+    labels = labels[shuffler]
+
+
     return dataset, labels
 
 
