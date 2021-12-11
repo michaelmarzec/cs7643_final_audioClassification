@@ -117,7 +117,7 @@ def augment_training_data(dataset: numpy.ndarray, labels: numpy.ndarray) -> [num
     subtraction_data_augments = np.ndarray([positive_samples, 10, 128], dtype=np.intc)
     label_augments = np.ones(positive_samples, dtype=labels.dtype)
 
-    sum_array = 10 * np.ones([1, 10, 128])
+    sum_array = 5 * np.ones([1, 10, 128])
     # first lets do the additions
     sum_index = 0
     for index in range(labels.shape[0]):
