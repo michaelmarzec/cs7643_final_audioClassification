@@ -80,22 +80,30 @@ def split_data_train_val(dataset, labels, percent_val=0.2):
     :return: 4 tensors, data_train, label_train, data_val, label_val
     """
     total_length = dataset.shape[0]
-    train_len = int(total_length * (1.0 - percent_val))
-    data_train = dataset[:train_len]
-    label_train = labels[:train_len]
-    data_val = dataset[train_len:]
-    label_val = labels[train_len:]
+    shuffled_indices = np.array(np.arange(total_length))
+    np.random.shuffle(shuffled_indices)
 
+    train_len = int(total_length * (1.0 - percent_val))
+    shuffled_data = dataset[shuffled_indices]
+    shuffled_labels = labels[shuffled_indices]
+
+    data_train = shuffled_data[:train_len]
+    label_train = shuffled_labels[:train_len]
+    data_val = shuffled_data[train_len:]
+    label_val = shuffled_labels[train_len:]
     return data_train, label_train, data_val, label_val
 
 
 def convert_multiclass_to_binary(wanted_class: int, array: np.ndarray):
-    return_array = np.zeros(array.shape[0], dtype=int)
+    print(array.shape)
+    return_array = np.zeros((array.shape[0], 2), dtype=float)
     count = 0
     for index in range(0, array.shape[0]):
         if wanted_class in array[index, :]:
-            return_array[index] = 1
+            return_array[index, 1] = 1
             count += 1
+        else:
+            return_array[index, 0] = 1
 
     return return_array, count
 
@@ -123,7 +131,7 @@ def train(model, dataloader, optimizer, criterion):
         input_data = data[0].to(device)
         correct_labels = data[1].to(device)
 
-        prediction = model(input_data)
+        prediction = model(torch.tensor(input_data, dtype=torch.float32).to(device))
 
         optimizer.zero_grad()
         loss = criterion(prediction, correct_labels)
