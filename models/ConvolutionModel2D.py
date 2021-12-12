@@ -16,8 +16,8 @@ class ConvolutionModel(nn.Module):
         # code inspired by
         # https://pytorch.org/tutorials/beginner/basics/buildmodel_tutorial.html
         num_in_channels = 1
-        num_out_channels=3
-        flat_size = 558 # kernel size 2
+        num_out_channels=4
+        flat_size = 744 # kernel size 2
         # flat_size = 180 # kernel size 3
         # flat_size = 600
         self.layer1 = nn.Conv2d(in_channels=num_in_channels,
